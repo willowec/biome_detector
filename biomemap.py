@@ -1,5 +1,8 @@
 # Dict which maps biome id to type
-# uses pre-1.13 biome id's
+# scraped form TheRedEngineer's biome detector:
+#   http://www.theredengineer.com/biome-detector.html
+# uses pre-1.13 biome id's, but also some post. 
+# Not accurate to modern versions of the game.
 BIOMES = {
     37: 'badlands',
     39: 'badlands_plateau',
