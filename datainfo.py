@@ -41,12 +41,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # get the data
     biomes = get_biome_count(args.data_directory)
-    print(biomes.shape, biomes)
     names = np.asarray(names_from_ids(biomes[:, 0]), str)
 
     # plot data
-    plt.rc('font', size=8)    # fontsize of the tick labels
+    plt.rc('font', size=8)
     fig, ax = plt.subplots()
     ax.barh(names, biomes[:, 1])
     plt.title("Number of images per biome in the dataset")

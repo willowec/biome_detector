@@ -40,7 +40,7 @@ def run_biome_command() -> None:
     pd.press('enter')
 
 
-def follow(file, sleep_sec=0.1):
+def follow(file, sleep_sec=0.2):
     """
     Yield each line from a file as they are written.
     `sleep_sec` is the time to sleep after empty reads. 
@@ -58,7 +58,7 @@ def follow(file, sleep_sec=0.1):
             if line.endswith("\n"):
                 yield line
                 line = ''
-        elif sleep_sec:
+        else:
             time.sleep(sleep_sec)
 
 
@@ -89,8 +89,9 @@ def take_screenshots(n: int):
     requires screenshot key to be set to 'i'
     """
     for _ in range(n):
-        time.sleep(0.5)
+        time.sleep(1)
         pd.press('i')
+        time.sleep(0.1)
         mouse._os_mouse.move_relative(random.randrange(100, 1000) ,0)
 
 
@@ -118,6 +119,7 @@ def save_image(im, biome_id):
     """
     Saves an image at a unique name path
     """
+    global n_new_files # TODO: awful. I hate it
     n_new_files += 1
 
     dir = pathlib.Path(DATA_DIR, f'biome_{biome_id}')
@@ -126,7 +128,7 @@ def save_image(im, biome_id):
     fpath = pathlib.Path(dir, f'biome_{biome_id}_{num_files}.jpg')
     im.save(fpath)
 
-    print("Saved resized image at ", fpath)
+    # print("Saved resized image at ", fpath)
 
 
 def line_recieved(line: str, last_biome_id, last_screenshot_names, args):
@@ -146,16 +148,16 @@ def line_recieved(line: str, last_biome_id, last_screenshot_names, args):
         if '[playerBiome]' in line:
             # store the biome index integer
             biome_id = int(line.split(" ")[-2])
-            print("Biome id:", biome_id)
+            # print("Biome id:", biome_id)
 
         if 'Saved screenshot as' in line:
             # store the name of the file
             screenshot_name = line.split(" ")[-1].replace('\n', '')
-            print("A screenshot was saved as ", screenshot_name)
+            # print("A screenshot was saved as ", screenshot_name)
 
         # handle recieving news that a data collection iteration has finished
         if ITER_COMPLETED in line:
-            print("now modifying screenshots based on ", last_screenshot_names)
+            # print("now modifying screenshots based on ", last_screenshot_names)
 
             for screenie in last_screenshot_names:
                 modify_screenshot(screenie, last_biome_id)
@@ -189,6 +191,9 @@ if __name__ == '__main__':
         last_biome_id = -1
         last_screenshot_names = []
 
+        # set the time at which the bot should notice it has fallen asleep and needs to kick back into gear
+        alarm_time = datetime.datetime.now() + datetime.timedelta(seconds=int(args.load_delay*2.5))
+
         for line in follow(file):
             lbi, lsn, reset = line_recieved(line, last_biome_id, last_screenshot_names, args)
 
@@ -204,7 +209,20 @@ if __name__ == '__main__':
             if reset:
                 last_biome_id = 0
                 last_screenshot_names = []
-            
+
+                # update alarm time so that the alarm doesn't go off accidentally
+                alarm_time = datetime.datetime.now() + datetime.timedelta(seconds=int(args.load_delay*2.5))
+
+            # If nothing has happened for a while, resend ITER_COMPLETED
+            if datetime.datetime.now() > alarm_time:
+                print("Bot has fallen still for too long. Wake up!")
+                alarm_time = datetime.datetime.now() + datetime.timedelta(seconds=int(args.load_delay*2.5))
+
+                # indicate that data collection iteration has finished (again)
+                time.sleep(0.1)
+                pd.press('t')
+                pg.write(ITER_COMPLETED)
+                pd.press('enter')
 
             # complete execution if time has run out
             if datetime.datetime.now() > stop_time:
