@@ -12,8 +12,6 @@ This script is designed to be run on minecraft version 1.13.1
 """
 
 ITER_COMPLETED = "FINISHED_ITERATION"
-SCREENSHOTS_DIR = r"C:\Users\zande\AppData\Roaming\.minecraft\1.13.1Install\screenshots"
-DATA_DIR = r"C:\Users\zande\Documents\Classes\F2022\ECE491\scraping\data"
 START_TIME = None   # set by main
 n_new_files = 0     # number of new files generated in this run
 
@@ -95,11 +93,11 @@ def take_screenshots(n: int):
         mouse._os_mouse.move_relative(random.randrange(100, 1000) ,0)
 
 
-def modify_screenshot(fname, biome_id):
+def modify_screenshot(fname, screenshots_dir, data_dir, biome_id):
     """
     Renames the screenshot at fname to biome_id, and scales it as well
     """
-    img_path = pathlib.Path(SCREENSHOTS_DIR, fname)
+    img_path = pathlib.Path(screenshots_dir, fname)
     assert img_path.exists(), f"Image path {img_path} DNE"
     
     # resize the image and convert to jpeg
@@ -109,20 +107,20 @@ def modify_screenshot(fname, biome_id):
         im_resized = im.resize((width, height))
         im_resized = im_resized.convert('RGB')  # JPEG cant handle RGBA
 
-        save_image(im_resized, biome_id)
+        save_image(im_resized, data_dir, biome_id)
     
     os.remove(img_path)
     assert not img_path.exists()
 
 
-def save_image(im, biome_id):
+def save_image(im, data_dir, biome_id):
     """
     Saves an image at a unique name path
     """
     global n_new_files # TODO: awful. I hate it
     n_new_files += 1
 
-    dir = pathlib.Path(DATA_DIR, f'biome_{biome_id}')
+    dir = pathlib.Path(data_dir, f'biome_{biome_id}')
     dir.mkdir(parents=True, exist_ok=True)
     num_files = len(list(dir.glob('*')))
     fpath = pathlib.Path(dir, f'biome_{biome_id}_{num_files}.jpg')
@@ -160,7 +158,7 @@ def line_recieved(line: str, last_biome_id, last_screenshot_names, args):
             # print("now modifying screenshots based on ", last_screenshot_names)
 
             for screenie in last_screenshot_names:
-                modify_screenshot(screenie, last_biome_id)
+                modify_screenshot(screenie, args.screenshots_dir, args.data_dir, last_biome_id)
 
             print(f"Teleporting. Uptime: {datetime.datetime.now() - START_TIME}.    Total new files: {n_new_files}")
 
@@ -171,16 +169,29 @@ def line_recieved(line: str, last_biome_id, last_screenshot_names, args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="screenbot: A script which automatically gathers screenshots of a minecraft world at random locations and labels them with the biome id of the location the screenshot was taken from.",
+        epilog=r"Example: py .\screenbot.py C:\Users\zande\AppData\Roaming\.minecraft\1.13.1Install\screenshots C:\Users\zande\Documents\Classes\F2022\ECE491\scraping\data C:\Users\zande\AppData\Roaming\.minecraft\1.13.1Install\logs\latest.log 120 15 99999"
+        )
+    
+    parser.add_argument('screenshots_dir', type=pathlib.Path, help="The path to the directory where minecraft saves its screenshots. Usually found in .minecraft/screenshots/")
+    parser.add_argument('data_dir', type=pathlib.Path, help="The root directory where data is to be saved.")
+    parser.add_argument('latest_log', type=pathlib.Path, help="The full path to the 'latest.log' file for minecraft. Often found in .minecraft/logs/latest.log")
     parser.add_argument('runtime', type=int, help="Amount of minutes to (roughly) run the program for.")
-    parser.add_argument('load_delay', type=int, help="Number of seconds to wait after teleporting for the world to load")
+    parser.add_argument('load_delay', type=int, help="Number of seconds to wait after teleporting for the world to load (recommend 10-15)")
     parser.add_argument('tele_range', type=int, help="Range to teleport around in")
 
     args = parser.parse_args()
     START_TIME = datetime.datetime.now()
     stop_time = START_TIME + datetime.timedelta(minutes=args.runtime)
 
-    log_path = r"C:\Users\zande\AppData\Roaming\.minecraft\1.13.1Install\logs\latest.log"
+    # ensure relevant paths exist
+    log_path = args.latest_log
+    assert log_path.exists()
+    screenshots_dir = args.screenshots_dir
+    assert screenshots_dir.exists()
+    data_dir = args.data_dir
+    assert data_dir.exists()
 
     # before reading from the log file, add a dummy to the end of it so that we don't accidentally start
     with open(log_path, 'a') as file:
