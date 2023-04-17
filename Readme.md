@@ -1,3 +1,11 @@
+# Biome Detector  
+
+## Network  
+TODO
+
+## Scraping  
+
+
 Images are taken in Minecraft 1.13.1
 Render distance 8 chunks
 peaceful mode
