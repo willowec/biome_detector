@@ -11,6 +11,8 @@ import mouse
 This script is designed to be run on minecraft version 1.13.1
 """
 
+SCREENSHOT_KEY = 'i'    # key (configured in minecraft settings) which takes a screenshot
+
 ITER_COMPLETED = "FINISHED_ITERATION"
 START_TIME = None   # set by main
 n_new_files = 0     # number of new files generated in this run
@@ -84,11 +86,11 @@ def get_new_data(range: int, load_wait: int):
 def take_screenshots(n: int):
     """
     Takes n screenshots at random rotations around the player in minecraft and names it with the biome_type command
-    requires screenshot key to be set to 'i'
+    requires screenshot key to be set to SCREENSHOT_KEY
     """
     for _ in range(n):
         time.sleep(1)
-        pd.press('i')
+        pd.press(SCREENSHOT_KEY)
         time.sleep(0.1)
         mouse._os_mouse.move_relative(random.randrange(100, 1000) ,0)
 
