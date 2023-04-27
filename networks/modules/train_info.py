@@ -64,20 +64,17 @@ def plot_accuracies(acc_dict: dict, sizes_dict: dict, title: str, save_path=None
 
 	datalen = len(acc_dict.values())
 	sizes = list(sizes_dict.values())
-	#sizes = [len(all_data.data[i]) for i in range(datalen)] #data sizes
 	accs = list(acc_dict.values()) #accuracies
 	d = list(zip(sizes, accs))
 
-	sorted_acc_by_size = [sorted(d)[i][1] for i in range(datalen)]
-
 	fig, ax = plt.subplots()
-	ax.scatter(sorted(sizes), sorted_acc_by_size)
+	ax.scatter(sizes, accs)
 	plt.title(title + " fit order = {}".format(fit_order))
 	plt.ylabel("Accuracy")
 	plt.xlabel("Class Size")
 
 	# fitline
-	poly = np.polyfit(sorted(sizes), sorted_acc_by_size, fit_order)
+	poly = np.polyfit(sizes, accs, fit_order)
 	f = np.poly1d(poly)
 	fit_x = np.linspace(-10, sorted(sizes)[-1])
 
