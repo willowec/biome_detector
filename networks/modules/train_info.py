@@ -6,8 +6,6 @@ import torch
 import matplotlib.pylab as plt
 import numpy as np
 
-print('ok')
-
 
 def write_info(hyperparameters: dict, train_accs: dict, test_accs: dict, class_sizes: dict) -> str:
 	"""
@@ -116,8 +114,36 @@ def per_class_accuracies(predictions, labels):
 	accuracy /= len(labels)
         
 	return accuracies, accuracy
-    
 
+
+def load_info(logfile):
+	"""
+	Loads a training log json file and renders information from it
+	"""
+	with open(logfile, 'r') as f:
+		data = json.load(f)
+		hyper = data[0]['hyperparameters']
+		train_accs = data[1]['train_accuracies']
+		test_accs = data[2]['test_accuracies']
+		img_per_cls = data[3]['imgs_per_class']
+
+		# calculate average accuracies
+		avg_acc_train =0
+		avg_acc_test = 0
+		for key in train_accs.keys():
+			avg_acc_train += train_accs[key]
+			avg_acc_test += test_accs[key]
+
+		avg_acc_train /= len(list(train_accs.keys()))
+		avg_acc_test  /= len(list(train_accs.keys()))
+
+		print(f"Average class training accuracy: {avg_acc_train:>3f}\nAverage class testing accuracy: {avg_acc_test:>3f}")
+
+		# plot the per class accuracies
+		plot_accuracies(train_accs, img_per_cls, "Per class training accuracies")
+		plot_accuracies(test_accs, img_per_cls, "Per class testing accuracies")
+
+	
 if __name__ == "__main__":
 	# write example file
 	write_info({'a': 0.1, 'b': 2}, {'c': 11, 'd':4}, {1:2, 4:5})
