@@ -145,7 +145,7 @@ def load_info(logfile):
 
 		# plot the per class accuracies
 		plot_accuracies(train_accs, img_per_cls, "Per class training accuracies", annotate=False)
-		plot_accuracies(test_accs, img_per_cls, "Per class testing accuracies", annotate=False)
+		plot_accuracies(test_accs, img_per_cls, "Per class testing accuracies", annotate=True)
 
 	
 if __name__ == "__main__":
