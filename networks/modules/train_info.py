@@ -51,7 +51,7 @@ def get_class_sizes(all_data) -> dict:
 	return sizes_d
 
 
-def plot_accuracies(acc_dict: dict, sizes_dict: dict, title: str, save_path=None):
+def plot_accuracies(acc_dict: dict, sizes_dict: dict, title: str, save_path=None, annotate=True):
 	"""
 	Plots a dictionary of accuracies by class and fits a line to them
 	
@@ -64,24 +64,28 @@ def plot_accuracies(acc_dict: dict, sizes_dict: dict, title: str, save_path=None
 
 	datalen = len(acc_dict.values())
 	sizes = list(sizes_dict.values())
-	#sizes = [len(all_data.data[i]) for i in range(datalen)] #data sizes
 	accs = list(acc_dict.values()) #accuracies
 	d = list(zip(sizes, accs))
 
-	sorted_acc_by_size = [sorted(d)[i][1] for i in range(datalen)]
-
+	plt.rcParams['figure.figsize'] = [10, 5]
 	fig, ax = plt.subplots()
-	ax.scatter(sorted(sizes), sorted_acc_by_size)
+
+	ax.scatter(sizes, accs)
 	plt.title(title + " fit order = {}".format(fit_order))
 	plt.ylabel("Accuracy")
 	plt.xlabel("Class Size")
 
 	# fitline
-	poly = np.polyfit(sorted(sizes), sorted_acc_by_size, fit_order)
+	poly = np.polyfit(sizes, accs, fit_order)
 	f = np.poly1d(poly)
 	fit_x = np.linspace(-10, sorted(sizes)[-1])
 
 	plt.plot(fit_x, f(fit_x) ,"r--")
+	
+	# annotate
+	if annotate:
+		for i, class_number in enumerate(list(range(datalen))):
+			ax.annotate(str(i), (sizes[i], accs[i]))
 
 	if not save_path:
 		plt.show()
@@ -140,8 +144,8 @@ def load_info(logfile):
 		print(f"Average class training accuracy: {avg_acc_train:>3f}\nAverage class testing accuracy: {avg_acc_test:>3f}")
 
 		# plot the per class accuracies
-		plot_accuracies(train_accs, img_per_cls, "Per class training accuracies")
-		plot_accuracies(test_accs, img_per_cls, "Per class testing accuracies")
+		plot_accuracies(train_accs, img_per_cls, "Per class training accuracies", annotate=False)
+		plot_accuracies(test_accs, img_per_cls, "Per class testing accuracies", annotate=True)
 
 	
 if __name__ == "__main__":
