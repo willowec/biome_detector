@@ -1,4 +1,5 @@
 # Biome Detector  
+A project by Will Cunningham and Mike Schmidtt which uses a convolutional neural network to guess the biome a given minecraft screenshot was taken in. The dataset generation is describes in the Scraping section, while the results of the trained network are described in the Network section.
 
 ## Network  
 TODO
