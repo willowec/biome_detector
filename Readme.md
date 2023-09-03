@@ -1,5 +1,5 @@
 # Biome Detector  
-A project by Will Cunningham and Mike Schmidtt which uses a convolutional neural network to guess the biome a given minecraft screenshot was taken in. The dataset generation is describes in the Scraping section, while the results of the trained network are described in the Network section.
+A project by Willow Cunningham and Mike Schmidtt which uses a convolutional neural network to guess the biome a given minecraft screenshot was taken in. The dataset generation is describes in the Scraping section, while the results of the trained network are described in the Network section.
 
 ## Network  
 The neural network is defined and trained using the notebook ```FocalLossCNN.ipynb```, and the fully trained model is saved in ```detector_model.pt```. Images can be classified using code in the notebook ```ModelDemo.ipynb```.
